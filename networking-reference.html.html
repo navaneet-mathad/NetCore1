@@ -1,0 +1,2400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NETCORE — Master Networking Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #020408;
+  --bg2: #050c14;
+  --surface: #0a1628;
+  --surface2: #0f1f38;
+  --border: #1a3050;
+  --accent: #00d4ff;
+  --accent2: #ff6b35;
+  --accent3: #7c3aed;
+  --accent4: #10b981;
+  --text: #e2f0ff;
+  --text-dim: #6b8caa;
+  --text-bright: #ffffff;
+  --glow: 0 0 40px rgba(0,212,255,0.3);
+  --glow2: 0 0 40px rgba(255,107,53,0.3);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* CUSTOM CURSOR */
+.cursor {
+  width: 12px; height: 12px;
+  background: var(--accent);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  transition: transform 0.1s, background 0.2s;
+  mix-blend-mode: screen;
+}
+.cursor-trail {
+  width: 40px; height: 40px;
+  border: 1px solid rgba(0,212,255,0.4);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9998;
+  transition: transform 0.3s ease, left 0.15s ease, top 0.15s ease;
+}
+
+/* CANVAS BACKGROUND */
+#bg-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+/* SCANLINES OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 16px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(2,4,8,0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 4px;
+  color: var(--accent);
+  text-shadow: var(--glow);
+}
+.nav-logo span { color: var(--accent2); }
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+.nav-links a {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-decoration: none;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--accent); }
+.nav-badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--accent2);
+  border: 1px solid var(--accent2);
+  padding: 4px 12px;
+  letter-spacing: 2px;
+}
+
+/* SECTIONS */
+section { position: relative; z-index: 2; }
+
+/* ===== HERO ===== */
+#hero {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.hero-content {
+  text-align: center;
+  z-index: 3;
+  position: relative;
+}
+.hero-eyebrow {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  animation: fadeUp 1s ease 0.2s both;
+}
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(80px, 12vw, 160px);
+  line-height: 0.9;
+  letter-spacing: -2px;
+  color: var(--text-bright);
+  animation: fadeUp 1s ease 0.4s both;
+}
+.hero-title .accent { 
+  color: transparent;
+  -webkit-text-stroke: 1px var(--accent);
+  text-shadow: none;
+}
+.hero-title .glow-text {
+  color: var(--accent);
+  text-shadow: 0 0 80px rgba(0,212,255,0.6);
+}
+.hero-subtitle {
+  font-size: 18px;
+  color: var(--text-dim);
+  margin-top: 24px;
+  font-weight: 300;
+  animation: fadeUp 1s ease 0.6s both;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.hero-stats {
+  display: flex;
+  gap: 48px;
+  justify-content: center;
+  margin-top: 48px;
+  animation: fadeUp 1s ease 0.8s both;
+}
+.stat {
+  text-align: center;
+}
+.stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 48px;
+  color: var(--accent);
+  line-height: 1;
+}
+.stat-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  margin-top: 4px;
+}
+.hero-cta {
+  margin-top: 48px;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  animation: fadeUp 1s ease 1s both;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+  padding: 14px 36px;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: none;
+  cursor: none;
+  transition: all 0.2s;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+.btn-primary:hover {
+  background: var(--text-bright);
+  box-shadow: 0 0 40px rgba(0,212,255,0.5);
+  transform: translateY(-2px);
+}
+.btn-secondary {
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 14px 36px;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: none;
+  transition: all 0.2s;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+.btn-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.scroll-indicator {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: bounce 2s infinite;
+}
+.scroll-line {
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, var(--accent), transparent);
+}
+.scroll-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--text-dim);
+  writing-mode: vertical-rl;
+}
+
+/* OSI 3D SECTION */
+#osi-section {
+  padding: 120px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.section-header {
+  margin-bottom: 80px;
+}
+.section-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--accent2);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-tag::before {
+  content: '';
+  width: 40px; height: 1px;
+  background: var(--accent2);
+}
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 6vw, 80px);
+  line-height: 1;
+  letter-spacing: 2px;
+}
+.section-desc {
+  color: var(--text-dim);
+  font-size: 16px;
+  max-width: 600px;
+  margin-top: 16px;
+  line-height: 1.7;
+}
+
+.osi-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+#osi-canvas-container {
+  position: relative;
+  height: 500px;
+}
+#osi-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.osi-layers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.osi-layer {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  cursor: none;
+  transition: transform 0.2s;
+}
+.osi-layer:hover { transform: translateX(8px); }
+.osi-layer:hover .osi-layer-bar { opacity: 1; }
+.osi-layer-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  color: var(--text-dim);
+  width: 40px;
+  text-align: right;
+  line-height: 1;
+  padding-top: 10px;
+}
+.osi-layer-bar {
+  width: 4px;
+  opacity: 0.5;
+  border-radius: 2px;
+  transition: opacity 0.2s;
+}
+.osi-layer-content {
+  flex: 1;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: none;
+}
+.osi-layer-content:hover { background: var(--surface2); }
+.osi-layer-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-bright);
+}
+.osi-layer-protocols {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+.osi-layer-pdu {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  margin-top: 4px;
+  padding: 2px 8px;
+  display: inline-block;
+  border-radius: 2px;
+}
+
+/* NETWORK TOPOLOGY SECTION */
+#topology-section {
+  padding: 120px 40px;
+  background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 50%, var(--bg) 100%);
+}
+.topology-grid {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.topology-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2px;
+  margin-top: 60px;
+}
+.topo-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 32px;
+  cursor: none;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.topo-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  transition: opacity 0.3s;
+  opacity: 0;
+}
+.topo-card:hover::before { opacity: 1; }
+.topo-card:hover { background: var(--surface2); transform: translateY(-4px); }
+.topo-card canvas {
+  width: 100%;
+  height: 120px;
+  display: block;
+  margin-bottom: 20px;
+}
+.topo-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.topo-meta {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+.badge-green { background: rgba(16,185,129,0.15); color: var(--accent4); border: 1px solid rgba(16,185,129,0.3); }
+.badge-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+.badge-blue { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.2); }
+.badge-orange { background: rgba(255,107,53,0.1); color: var(--accent2); border: 1px solid rgba(255,107,53,0.2); }
+.topo-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+/* PROTOCOLS TABLE */
+#protocols-section {
+  padding: 120px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.proto-search {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 40px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 12px 20px;
+  max-width: 500px;
+}
+.proto-search input {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  flex: 1;
+  outline: none;
+}
+.proto-search input::placeholder { color: var(--text-dim); }
+.search-icon { color: var(--accent); font-size: 16px; }
+
+.filter-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.filter-tab {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 8px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: none;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.filter-tab.active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.filter-tab:hover:not(.active) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.proto-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.proto-table th {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.proto-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(26,48,80,0.5);
+  font-size: 13px;
+  transition: background 0.15s;
+}
+.proto-table tr:hover td { background: var(--surface); }
+.proto-name {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 12px;
+}
+.proto-port {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  color: var(--accent2);
+}
+.proto-security-good { color: var(--accent4); font-size: 11px; }
+.proto-security-bad { color: #f87171; font-size: 11px; }
+.proto-security-warn { color: #fbbf24; font-size: 11px; }
+
+/* TCP HANDSHAKE VISUAL */
+#tcp-section {
+  padding: 120px 40px;
+  background: var(--bg2);
+}
+.tcp-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.tcp-visual {
+  margin-top: 60px;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+.tcp-endpoint {
+  text-align: center;
+}
+.tcp-device {
+  width: 80px; height: 80px;
+  margin: 0 auto 16px;
+  position: relative;
+}
+.tcp-device-icon {
+  width: 80px; height: 80px;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  position: relative;
+}
+.tcp-device-icon::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 1px solid transparent;
+  animation: device-pulse 2s infinite;
+}
+.tcp-device-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+.tcp-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.tcp-message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(26,48,80,0.3);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.5s;
+}
+.tcp-message.visible { opacity: 1; transform: translateY(0); }
+.tcp-message.to-server { flex-direction: row; }
+.tcp-message.to-client { flex-direction: row-reverse; }
+.tcp-arrow {
+  flex: 1;
+  height: 2px;
+  position: relative;
+  overflow: visible;
+}
+.tcp-arrow-line {
+  height: 2px;
+  border-radius: 1px;
+  width: 0;
+  transition: width 0.8s ease;
+}
+.tcp-message.visible .tcp-arrow-line { width: 100%; }
+.tcp-arrow::after {
+  content: '▶';
+  position: absolute;
+  right: 0; top: -7px;
+  font-size: 10px;
+}
+.tcp-message.to-client .tcp-arrow::after { content: '◀'; right: auto; left: 0; }
+.tcp-flag {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.tcp-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.phase-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 2px;
+  padding: 16px 0 8px;
+  color: var(--text-dim);
+}
+
+/* DNS JOURNEY */
+#dns-section {
+  padding: 120px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.dns-visual {
+  margin-top: 60px;
+  position: relative;
+}
+.dns-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+}
+.dns-step {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 24px;
+  position: relative;
+  cursor: none;
+  transition: all 0.3s;
+}
+.dns-step:hover { background: var(--surface2); border-color: var(--accent); }
+.dns-step-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 64px;
+  color: rgba(0,212,255,0.1);
+  position: absolute;
+  top: 8px; right: 16px;
+  line-height: 1;
+}
+.dns-step-type {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.dns-step-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.dns-step-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+.dns-flow-arrow {
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent);
+  font-size: 20px;
+  z-index: 2;
+}
+.dns-records {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 40px;
+}
+.dns-record {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 16px;
+  transition: all 0.2s;
+  cursor: none;
+}
+.dns-record:hover { border-color: var(--accent2); background: var(--surface2); }
+.dns-record-type {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  color: var(--accent2);
+}
+.dns-record-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+.dns-record-desc {
+  font-size: 12px;
+  color: var(--text);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* SECURITY SECTION */
+#security-section {
+  padding: 120px 40px;
+  background: var(--bg2);
+}
+.security-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.threat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 60px;
+}
+.threat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  cursor: none;
+  transition: all 0.3s;
+}
+.threat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: radial-gradient(circle at top left, rgba(239,68,68,0.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+.threat-card:hover { border-color: rgba(239,68,68,0.4); transform: translateY(-4px); }
+.threat-card:hover::before { background: radial-gradient(circle at top left, rgba(239,68,68,0.1) 0%, transparent 60%); }
+.threat-icon {
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+.threat-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  color: #f87171;
+}
+.threat-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.threat-defence {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(16,185,129,0.05);
+  border: 1px solid rgba(16,185,129,0.2);
+  padding: 12px;
+  font-size: 12px;
+  color: var(--accent4);
+}
+.threat-defence-icon { flex-shrink: 0; }
+
+/* ZERO TRUST */
+#zt-section {
+  padding: 120px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+#zt-canvas-wrap {
+  height: 500px;
+  position: relative;
+  margin-top: 60px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+#zt-canvas { width: 100%; height: 100%; }
+.zt-principles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-top: 40px;
+}
+.zt-principle {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+  cursor: none;
+  transition: all 0.3s;
+}
+.zt-principle:hover { background: var(--surface2); }
+.zt-principle-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 80px;
+  color: rgba(124,58,237,0.15);
+  position: absolute;
+  bottom: -10px; right: 16px;
+  line-height: 1;
+}
+.zt-principle-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 1px;
+  color: var(--accent3);
+  margin-bottom: 12px;
+}
+.zt-principle-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+/* QUIZ SECTION */
+#quiz-section {
+  padding: 120px 40px;
+  background: var(--bg2);
+}
+.quiz-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+.quiz-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 48px;
+  margin-top: 60px;
+  text-align: left;
+}
+.quiz-progress {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.quiz-progress-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.quiz-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+.quiz-counter {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.quiz-question {
+  font-size: 18px;
+  color: var(--text-bright);
+  line-height: 1.5;
+  margin-bottom: 32px;
+  font-weight: 500;
+}
+.quiz-category {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.quiz-option {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 16px 20px;
+  cursor: none;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+}
+.quiz-option:hover:not(.disabled) { border-color: var(--accent); background: rgba(0,212,255,0.05); }
+.quiz-option.correct { border-color: var(--accent4); background: rgba(16,185,129,0.1); color: var(--accent4); }
+.quiz-option.incorrect { border-color: #f87171; background: rgba(239,68,68,0.1); color: #f87171; }
+.quiz-option.disabled { cursor: default; }
+.option-letter {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  width: 24px;
+  flex-shrink: 0;
+}
+.quiz-feedback {
+  margin-top: 24px;
+  padding: 16px 20px;
+  border-radius: 2px;
+  font-size: 13px;
+  line-height: 1.6;
+  display: none;
+}
+.quiz-feedback.visible { display: block; }
+.quiz-feedback.correct { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: var(--accent4); }
+.quiz-feedback.incorrect { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+.quiz-next {
+  margin-top: 24px;
+  background: var(--accent);
+  color: var(--bg);
+  padding: 12px 32px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  border: none;
+  cursor: none;
+  text-transform: uppercase;
+  display: none;
+  transition: all 0.2s;
+}
+.quiz-next.visible { display: block; }
+.quiz-next:hover { background: var(--text-bright); }
+.quiz-score {
+  display: none;
+  text-align: center;
+}
+.quiz-score.visible { display: block; }
+.score-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 100px;
+  color: var(--accent);
+  line-height: 1;
+}
+.score-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 14px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+}
+.score-restart {
+  margin-top: 32px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 12px 32px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  cursor: none;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+.score-restart:hover { background: var(--accent); color: var(--bg); }
+
+/* CHEAT SHEET */
+#cheatsheet-section {
+  padding: 120px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.cheat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-top: 60px;
+}
+.cheat-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 32px;
+}
+.cheat-block-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+.cheat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(26,48,80,0.4);
+  font-size: 13px;
+  gap: 16px;
+}
+.cheat-key {
+  font-family: 'Space Mono', monospace;
+  color: var(--accent2);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.cheat-val {
+  color: var(--text-dim);
+  text-align: right;
+  font-size: 12px;
+}
+
+/* FOOTER */
+footer {
+  padding: 60px 40px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  text-align: center;
+  z-index: 2;
+  position: relative;
+}
+.footer-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 40px;
+  letter-spacing: 6px;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+.footer-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+}
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(10px); }
+}
+@keyframes device-pulse {
+  0%, 100% { border-color: transparent; box-shadow: none; }
+  50% { border-color: rgba(0,212,255,0.3); box-shadow: 0 0 20px rgba(0,212,255,0.1); }
+}
+@keyframes packet-fly {
+  0% { transform: translateX(-100%); opacity: 1; }
+  100% { transform: translateX(100vw); opacity: 0; }
+}
+
+/* REVEAL ANIMATIONS */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* IP CALCULATOR */
+#calc-section {
+  padding: 120px 40px;
+  background: var(--bg2);
+}
+.calc-inner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.calc-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 40px;
+  margin-top: 60px;
+}
+.calc-input-group {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px;
+  margin-bottom: 24px;
+}
+.calc-input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  font-size: 18px;
+  padding: 16px 20px;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.calc-input:focus { border-color: var(--accent); }
+.calc-btn {
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  padding: 16px 32px;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.calc-btn:hover { background: var(--text-bright); }
+.calc-results {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  margin-top: 8px;
+}
+.calc-result-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 16px 20px;
+}
+.calc-result-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.calc-result-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 14px;
+  color: var(--accent);
+}
+
+/* PACKET ANIMATION BAR */
+.packet-bar {
+  height: 3px;
+  background: var(--bg2);
+  position: relative;
+  overflow: hidden;
+  margin: 40px 0;
+}
+.packet-dot {
+  position: absolute;
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(to right, transparent, var(--accent));
+  animation: packet-fly 3s linear infinite;
+}
+.packet-dot:nth-child(2) { animation-delay: 1s; }
+.packet-dot:nth-child(3) { animation-delay: 2s; }
+
+/* COMPARISON VPN vs ZTNA */
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-top: 40px;
+}
+.compare-col {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 32px;
+}
+.compare-col.bad { border-top: 3px solid #f87171; }
+.compare-col.good { border-top: 3px solid var(--accent4); }
+.compare-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+}
+.compare-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(26,48,80,0.3);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.compare-icon { flex-shrink: 0; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursor-trail"></div>
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">NET<span>CORE</span></div>
+  <ul class="nav-links">
+    <li><a href="#osi-section">OSI MODEL</a></li>
+    <li><a href="#protocols-section">PROTOCOLS</a></li>
+    <li><a href="#dns-section">DNS</a></li>
+    <li><a href="#security-section">SECURITY</a></li>
+    <li><a href="#quiz-section">QUIZ</a></li>
+    <li><a href="#cheatsheet-section">CHEATSHEET</a></li>
+  </ul>
+  <div class="nav-badge">v3.0 — 2026</div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow">🌐 Palo Alto Networks · Master Reference · 22 Chapters</div>
+    <div class="hero-title">
+      MASTER<br>
+      <span class="accent">COMPUTER</span><br>
+      <span class="glow-text">NETWORKING</span>
+    </div>
+    <p class="hero-subtitle">From OSI layers to Zero Trust, SASE to subnetting — every protocol, every concept, beautifully visualized.</p>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">22</div><div class="stat-label">CHAPTERS</div></div>
+      <div class="stat"><div class="stat-num">100+</div><div class="stat-label">PROTOCOLS</div></div>
+      <div class="stat"><div class="stat-num">3D</div><div class="stat-label">VISUALS</div></div>
+      <div class="stat"><div class="stat-num">∞</div><div class="stat-label">KNOWLEDGE</div></div>
+    </div>
+    <div class="hero-cta">
+      <a href="#osi-section" class="btn-primary">EXPLORE NOW</a>
+      <a href="#quiz-section" class="btn-secondary">TAKE QUIZ</a>
+    </div>
+  </div>
+  <div class="scroll-indicator">
+    <span class="scroll-text">SCROLL</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- OSI 3D SECTION -->
+<section id="osi-section">
+  <div style="max-width:1400px;margin:0 auto;padding:120px 40px;">
+    <div class="section-header reveal">
+      <div class="section-tag">Chapter 5 · Conceptual Framework</div>
+      <div class="section-title">THE OSI MODEL<br><span style="color:var(--accent)">7 LAYERS</span></div>
+      <p class="section-desc">The Open Systems Interconnection model — the most important conceptual framework in all of networking. Every packet traverses these layers.</p>
+    </div>
+    <div class="osi-container">
+      <div id="osi-canvas-container" class="reveal">
+        <canvas id="osi-canvas"></canvas>
+      </div>
+      <div class="osi-layers reveal">
+        <div class="osi-layer" data-layer="7" style="--lc:#00d4ff">
+          <div class="osi-layer-num">7</div>
+          <div class="osi-layer-bar" style="background:linear-gradient(to bottom,#00d4ff,#0099bb)"></div>
+          <div class="osi-layer-content">
+            <div class="osi-layer-name">Application</div>
+            <div class="osi-layer-protocols">HTTP, HTTPS, DNS, FTP, SMTP, SSH, DHCP</div>
+            <span class="osi-layer-pdu" style="background:rgba(0,212,255,0.1);color:#00d4ff;border:1px solid rgba(0,212,255,0.3)">DATA / MESSAGE</span>
+          </div>
+        </div>
+        <div class="osi-layer" data-layer="6">
+          <div class="osi-layer-num">6</div>
+          <div class="osi-layer-bar" style="background:linear-gradient(to bottom,#00b4d8,#0077b6)"></div>
+          <div class="osi-layer-content">
+            <div class="osi-layer-name">Presentation</div>
+            <div class="osi-layer-protocols">SSL/TLS, JPEG, MP4, ASCII, UTF-8, ZIP, GZIP</div>
+            <span class="osi-layer-pdu" style="background:rgba(0,180,216,0.1);color:#00b4d8;border:1px solid rgba(0,180,216,0.3)">DATA</span>
+          </div>
+        </div>
+        <div class="osi-layer" data-layer="5">
+          <div class="osi-layer-num">5</div>
+          <div class="osi-layer-bar" style="background:linear-gradient(to bottom,#7c3aed,#5b21b6)"></div>
+          <div class="osi-layer-content">
+            <div class="osi-layer-name">Session</div>
+            <div class="osi-layer-protocols">NetBIOS, RPC, PPTP, SOCKS, NFS</div>
+            <span class="osi-layer-pdu" style="background:rgba(124,58,237,0.1);color:#7c3aed;border:1px solid rgba(124,58,237,0.3)">DATA</span>
+          </div>
+        </div>
+        <div class="osi-layer" data-layer="4">
+          <div class="osi-layer-num">4</div>
+          <div class="osi-layer-bar" style="background:linear-gradient(to bottom,#10b981,#059669)"></div>
+          <div class="osi-layer-content">
+            <div class="osi-layer-name">Transport</div>
+            <div class="osi-layer-protocols">TCP, UDP, SCTP — ports, flow & congestion control</div>
+            <span class="osi-layer-pdu" style="background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.3)">SEGMENT / DATAGRAM</span>
+          </div>
+        </div>
+        <div class="osi-layer" data-layer="3">
+          <div class="osi-layer-num">3</div>
+          <div class="osi-layer-bar" style="background:linear-gradient(to bottom,#f59e0b,#d97706)"></div>
+          <div class="osi-layer-content">
+            <div class="osi-layer-name">Network</div>
+            <div class="osi-layer-protocols">IP v4/v6, ICMP, OSPF, BGP, ARP — routing</div>
+            <span class="osi-layer-pdu" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.3)">PACKET</span>
+          </div>
+        </div>
+        <div class="osi-layer" data-layer="2">
+          <div class="osi-layer-num">2</div>
+          <div class="osi-layer-bar" style="background:linear-gradient(to bottom,#ff6b35,#e85c2e)"></div>
+          <div class="osi-layer-content">
+            <div class="osi-layer-name">Data Link</div>
+            <div class="osi-layer-protocols">Ethernet, Wi-Fi 802.11, PPP, MAC addressing</div>
+            <span class="osi-layer-pdu" style="background:rgba(255,107,53,0.1);color:#ff6b35;border:1px solid rgba(255,107,53,0.3)">FRAME</span>
+          </div>
+        </div>
+        <div class="osi-layer" data-layer="1">
+          <div class="osi-layer-num">1</div>
+          <div class="osi-layer-bar" style="background:linear-gradient(to bottom,#ef4444,#b91c1c)"></div>
+          <div class="osi-layer-content">
+            <div class="osi-layer-name">Physical</div>
+            <div class="osi-layer-protocols">Ethernet cable, Fibre optic, Wi-Fi radio, DSL</div>
+            <span class="osi-layer-pdu" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3)">BIT</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NETWORK TOPOLOGIES -->
+<section id="topology-section">
+  <div class="topology-grid">
+    <div class="section-header reveal">
+      <div class="section-tag">Chapter 4 · Infrastructure Design</div>
+      <div class="section-title">NETWORK<br><span style="color:var(--accent2)">TOPOLOGIES</span></div>
+      <p class="section-desc">Five fundamental arrangements of nodes and connections. Physical topology is the actual layout. Logical topology describes data flow.</p>
+    </div>
+    <div class="packet-bar"><div class="packet-dot"></div><div class="packet-dot"></div><div class="packet-dot"></div></div>
+    <div class="topology-cards reveal">
+      <div class="topo-card" style="--tc:#ef4444">
+        <div class="topo-card" style="border:none;padding:0;background:none;">
+          <canvas id="topo-bus" width="240" height="120"></canvas>
+          <div class="topo-name" style="color:#ef4444">BUS</div>
+          <div class="topo-meta">
+            <span class="badge badge-red">LOW FAULT TOLERANCE</span>
+            <span class="badge badge-green">LOW COST</span>
+          </div>
+          <p class="topo-desc">All devices on a single backbone cable. Cable failure = entire network down. Obsolete since 1990s.</p>
+        </div>
+      </div>
+      <div class="topo-card">
+        <canvas id="topo-ring" width="240" height="120"></canvas>
+        <div class="topo-name" style="color:#a78bfa">RING</div>
+        <div class="topo-meta">
+          <span class="badge badge-orange">TOKEN BASED</span>
+          <span class="badge badge-red">LEGACY</span>
+        </div>
+        <p class="topo-desc">Closed loop. Token controls transmission. IBM Token Ring, FDDI — legacy systems only.</p>
+      </div>
+      <div class="topo-card">
+        <canvas id="topo-star" width="240" height="120"></canvas>
+        <div class="topo-name" style="color:var(--accent)">STAR ✓</div>
+        <div class="topo-meta">
+          <span class="badge badge-green">MOST COMMON</span>
+          <span class="badge badge-blue">MODERN LAN</span>
+        </div>
+        <p class="topo-desc">All devices to a central switch. Easy troubleshooting. One failure doesn't affect others. Your home network.</p>
+      </div>
+      <div class="topo-card">
+        <canvas id="topo-tree" width="240" height="120"></canvas>
+        <div class="topo-name" style="color:#10b981">TREE</div>
+        <div class="topo-meta">
+          <span class="badge badge-green">HIGHLY SCALABLE</span>
+          <span class="badge badge-blue">ENTERPRISE</span>
+        </div>
+        <p class="topo-desc">Hierarchical star networks. Core → floor switches → desks. Universities, enterprise campuses.</p>
+      </div>
+      <div class="topo-card">
+        <canvas id="topo-mesh" width="240" height="120"></canvas>
+        <div class="topo-name" style="color:var(--accent2)">MESH</div>
+        <div class="topo-meta">
+          <span class="badge badge-green">NO SINGLE POF</span>
+          <span class="badge badge-orange">HIGH COST</span>
+        </div>
+        <p class="topo-desc">Every device connects to every other. n(n-1)/2 links. Internet backbone, military, ISP core networks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROTOCOLS TABLE -->
+<section id="protocols-section">
+  <div class="section-header reveal">
+    <div class="section-tag">Chapter 3 · Quick Reference</div>
+    <div class="section-title">KEY PROTOCOLS<br><span style="color:var(--accent4)">& PORTS</span></div>
+    <p class="section-desc">Every critical protocol, its port, transport layer, and security posture. Filter by layer or search by name.</p>
+  </div>
+  <div style="margin-top:40px;">
+    <div class="proto-search reveal">
+      <span class="search-icon">⌕</span>
+      <input type="text" placeholder="Search protocols..." id="proto-search-input">
+    </div>
+    <div class="filter-tabs reveal">
+      <button class="filter-tab active" data-filter="all">ALL</button>
+      <button class="filter-tab" data-filter="web">WEB</button>
+      <button class="filter-tab" data-filter="email">EMAIL</button>
+      <button class="filter-tab" data-filter="security">SECURITY</button>
+      <button class="filter-tab" data-filter="routing">ROUTING</button>
+      <button class="filter-tab" data-filter="management">MANAGEMENT</button>
+    </div>
+    <div class="reveal">
+    <table class="proto-table" id="proto-table">
+      <thead>
+        <tr>
+          <th>PROTOCOL</th>
+          <th>PORT(S)</th>
+          <th>TRANSPORT</th>
+          <th>PURPOSE</th>
+          <th>SECURITY</th>
+        </tr>
+      </thead>
+      <tbody id="proto-tbody"></tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- TCP HANDSHAKE -->
+<section id="tcp-section">
+  <div class="tcp-inner">
+    <div class="section-header reveal">
+      <div class="section-tag">Chapter 12 · Transport Layer</div>
+      <div class="section-title">TCP 3-WAY<br><span style="color:var(--accent)">HANDSHAKE</span></div>
+      <p class="section-desc">Before any data flows, TCP establishes a reliable connection. Three messages, three milliseconds, a contract between endpoints.</p>
+    </div>
+    <div class="tcp-visual reveal">
+      <div class="tcp-endpoint">
+        <div class="tcp-device">
+          <div class="tcp-device-icon">💻</div>
+        </div>
+        <div class="tcp-device-label">CLIENT</div>
+        <div style="width:2px;background:linear-gradient(to bottom,var(--accent),transparent);height:380px;margin:0 auto;margin-top:16px;"></div>
+      </div>
+      <div class="tcp-timeline" id="tcp-timeline">
+        <div class="phase-label">CONNECTION ESTABLISHMENT</div>
+        <div class="tcp-message to-server" id="msg-1">
+          <span class="tcp-flag" style="background:rgba(0,212,255,0.15);color:var(--accent);border:1px solid rgba(0,212,255,0.4)">SYN</span>
+          <div class="tcp-arrow">
+            <div class="tcp-arrow-line" style="background:var(--accent)"></div>
+          </div>
+          <span class="tcp-desc">Seq=X (random ISN)<br>"Want to connect!"</span>
+        </div>
+        <div class="tcp-message to-client" id="msg-2">
+          <span class="tcp-flag" style="background:rgba(124,58,237,0.15);color:#a78bfa;border:1px solid rgba(124,58,237,0.4)">SYN-ACK</span>
+          <div class="tcp-arrow">
+            <div class="tcp-arrow-line" style="background:#a78bfa"></div>
+          </div>
+          <span class="tcp-desc" style="text-align:right">Seq=Y, Ack=X+1<br>"Got it! Here's mine!"</span>
+        </div>
+        <div class="tcp-message to-server" id="msg-3">
+          <span class="tcp-flag" style="background:rgba(16,185,129,0.15);color:var(--accent4);border:1px solid rgba(16,185,129,0.4)">ACK</span>
+          <div class="tcp-arrow">
+            <div class="tcp-arrow-line" style="background:var(--accent4)"></div>
+          </div>
+          <span class="tcp-desc">Ack=Y+1<br>"Connected! ✓"</span>
+        </div>
+        <div class="phase-label" style="margin-top:24px;color:#f87171">4-WAY TERMINATION</div>
+        <div class="tcp-message to-server" id="msg-4">
+          <span class="tcp-flag" style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.4)">FIN</span>
+          <div class="tcp-arrow">
+            <div class="tcp-arrow-line" style="background:#f87171"></div>
+          </div>
+          <span class="tcp-desc">"Done sending data"</span>
+        </div>
+        <div class="tcp-message to-client" id="msg-5">
+          <span class="tcp-flag" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.4)">ACK</span>
+          <div class="tcp-arrow">
+            <div class="tcp-arrow-line" style="background:#fbbf24"></div>
+          </div>
+          <span class="tcp-desc" style="text-align:right">CLOSE_WAIT state</span>
+        </div>
+        <div class="tcp-message to-client" id="msg-6">
+          <span class="tcp-flag" style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.4)">FIN</span>
+          <div class="tcp-arrow">
+            <div class="tcp-arrow-line" style="background:#f87171"></div>
+          </div>
+          <span class="tcp-desc" style="text-align:right">LAST_ACK state</span>
+        </div>
+        <div class="tcp-message to-server" id="msg-7">
+          <span class="tcp-flag" style="background:rgba(16,185,129,0.15);color:var(--accent4);border:1px solid rgba(16,185,129,0.4)">ACK</span>
+          <div class="tcp-arrow">
+            <div class="tcp-arrow-line" style="background:var(--accent4)"></div>
+          </div>
+          <span class="tcp-desc">TIME_WAIT 2×MSL</span>
+        </div>
+      </div>
+      <div class="tcp-endpoint">
+        <div class="tcp-device">
+          <div class="tcp-device-icon">🖥️</div>
+        </div>
+        <div class="tcp-device-label">SERVER</div>
+        <div style="width:2px;background:linear-gradient(to bottom,var(--accent2),transparent);height:380px;margin:0 auto;margin-top:16px;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DNS SECTION -->
+<section id="dns-section">
+  <div class="section-header reveal">
+    <div class="section-tag">Chapter 11 · Name Resolution</div>
+    <div class="section-title">DNS — THE INTERNET'S<br><span style="color:var(--accent)">PHONE BOOK</span></div>
+    <p class="section-desc">Translating human-readable names to IP addresses. A hierarchical, distributed database spanning thousands of servers worldwide.</p>
+  </div>
+  <div class="dns-visual reveal">
+    <div class="dns-steps">
+      <div class="dns-step">
+        <div class="dns-step-num">1</div>
+        <div class="dns-step-type">🌐 Browser</div>
+        <div class="dns-step-title">CHECK CACHE</div>
+        <div class="dns-step-desc">Browser cache → OS cache → /etc/hosts. If cached & TTL valid → done in &lt;1ms!</div>
+        <div class="dns-flow-arrow">→</div>
+      </div>
+      <div class="dns-step">
+        <div class="dns-step-num">2</div>
+        <div class="dns-step-type">📡 Recursive Resolver</div>
+        <div class="dns-step-title">8.8.8.8 or 1.1.1.1</div>
+        <div class="dns-step-desc">Your ISP's resolver does the heavy lifting. Queries root → TLD → authoritative on your behalf.</div>
+        <div class="dns-flow-arrow">→</div>
+      </div>
+      <div class="dns-step">
+        <div class="dns-step-num">3</div>
+        <div class="dns-step-type">🌍 TLD Server</div>
+        <div class="dns-step-title">.COM TLD</div>
+        <div class="dns-step-desc">13 root clusters (A–M) worldwide via anycast. Verisign manages .com/.net. Returns authoritative NS.</div>
+        <div class="dns-flow-arrow">→</div>
+      </div>
+      <div class="dns-step">
+        <div class="dns-step-num">4</div>
+        <div class="dns-step-type">✅ Authoritative NS</div>
+        <div class="dns-step-title">FINAL ANSWER</div>
+        <div class="dns-step-desc">The true authority for the domain. Returns actual IP. Result cached for TTL duration (e.g. 3600s).</div>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);padding:20px 28px;margin-top:2px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-dim)">EXAMPLE:</span>
+      <span style="font-family:'Space Mono',monospace;font-size:13px;color:var(--accent)">github.com</span>
+      <span style="color:var(--text-dim);font-size:18px">→</span>
+      <span style="font-family:'Space Mono',monospace;font-size:13px;color:var(--accent4)">140.82.114.4</span>
+      <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text-dim)">TTL=60s | Full resolution ~10–100ms</span>
+    </div>
+  </div>
+  <div class="dns-records reveal">
+    <div class="dns-record">
+      <div class="dns-record-type">A</div>
+      <div class="dns-record-name">ADDRESS RECORD</div>
+      <div class="dns-record-desc">Domain → IPv4<br>github.com → 140.82.114.4</div>
+    </div>
+    <div class="dns-record">
+      <div class="dns-record-type">AAAA</div>
+      <div class="dns-record-name">IPv6 ADDRESS</div>
+      <div class="dns-record-desc">Domain → IPv6<br>2606:50c0::...</div>
+    </div>
+    <div class="dns-record">
+      <div class="dns-record-type">CNAME</div>
+      <div class="dns-record-name">CANONICAL NAME</div>
+      <div class="dns-record-desc">Alias → Domain<br>www → github.com</div>
+    </div>
+    <div class="dns-record">
+      <div class="dns-record-type">MX</div>
+      <div class="dns-record-name">MAIL EXCHANGE</div>
+      <div class="dns-record-desc">Domain → Mail server<br>with priority value</div>
+    </div>
+    <div class="dns-record">
+      <div class="dns-record-type">TXT</div>
+      <div class="dns-record-name">TEXT RECORD</div>
+      <div class="dns-record-desc">SPF, DKIM, domain<br>verification data</div>
+    </div>
+    <div class="dns-record">
+      <div class="dns-record-type">PTR</div>
+      <div class="dns-record-name">POINTER (REVERSE)</div>
+      <div class="dns-record-desc">IP → Domain name<br>Reverse DNS lookup</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY SECTION -->
+<section id="security-section">
+  <div class="security-inner">
+    <div class="section-header reveal">
+      <div class="section-tag">Chapter 16 · Threat Landscape</div>
+      <div class="section-title">NETWORK SECURITY<br><span style="color:#f87171">THREATS</span></div>
+      <p class="section-desc">Modern threats, attack vectors, and defensive countermeasures. Know your adversary.</p>
+    </div>
+    <div class="threat-grid reveal">
+      <div class="threat-card">
+        <div class="threat-icon">🦠</div>
+        <div class="threat-name">RANSOMWARE</div>
+        <div class="threat-desc">Encrypts files and demands cryptocurrency ransom. LockBit, REvil, Conti extorted $1B+ from companies. NotPetya paralysed Maersk ($300M damage).</div>
+        <div class="threat-defence"><span class="threat-defence-icon">🛡️</span> WildFire sandboxing + backup isolation + network segmentation</div>
+      </div>
+      <div class="threat-card">
+        <div class="threat-icon">🎣</div>
+        <div class="threat-name">PHISHING</div>
+        <div class="threat-desc">Email/web deception to steal credentials or install malware. BEC fraud — $26B+ per year globally. Most common initial access vector.</div>
+        <div class="threat-defence"><span class="threat-defence-icon">🛡️</span> URL Filtering + Email Security + User training</div>
+      </div>
+      <div class="threat-card">
+        <div class="threat-icon">💉</div>
+        <div class="threat-name">SQL INJECTION</div>
+        <div class="threat-desc">Database manipulation via unsanitised web input. <code style="color:var(--accent2);font-size:11px">' OR 1=1; DROP TABLE users--</code> → full database access.</div>
+        <div class="threat-defence"><span class="threat-defence-icon">🛡️</span> WAF + App-ID + Threat Prevention signatures</div>
+      </div>
+      <div class="threat-card">
+        <div class="threat-icon">🌊</div>
+        <div class="threat-name">DDoS ATTACK</div>
+        <div class="threat-desc">Overwhelming target resources. Mirai botnet (500 Gbps) took down Dyn DNS 2016. Types: Volumetric, Protocol, Application-layer.</div>
+        <div class="threat-defence"><span class="threat-defence-icon">🛡️</span> Zone Protection Profiles + Anti-DDoS + SYN cookies</div>
+      </div>
+      <div class="threat-card">
+        <div class="threat-icon">🕵️</div>
+        <div class="threat-name">APT / NATION STATE</div>
+        <div class="threat-desc">Advanced Persistent Threats — stealthy long-term compromise. APT29 SolarWinds supply chain attack 2020 affected 18,000+ customers.</div>
+        <div class="threat-defence"><span class="threat-defence-icon">🛡️</span> Cortex XDR behavioral detection + AutoFocus threat intel</div>
+      </div>
+      <div class="threat-card">
+        <div class="threat-icon">🔀</div>
+        <div class="threat-name">MITM ATTACK</div>
+        <div class="threat-desc">Intercept/alter communications between two parties. ARP spoofing on LAN, BGP hijacking at internet scale.</div>
+        <div class="threat-defence"><span class="threat-defence-icon">🛡️</span> TLS inspection + HSTS + Dynamic ARP Inspection (DAI)</div>
+      </div>
+    </div>
+
+    <!-- OWASP TOP 10 -->
+    <div style="margin-top:80px;" class="reveal">
+      <div class="section-tag">OWASP Top 10 · 2021</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2px;margin-top:24px;">
+        <div style="background:var(--surface);border:1px solid var(--border);padding:20px 24px;display:flex;gap:16px;align-items:flex-start;cursor:none;transition:all 0.2s;" onmouseenter="this.style.borderColor='var(--accent2)'" onmouseleave="this.style.borderColor='var(--border)'">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent2);flex-shrink:0;line-height:1">A01</div>
+          <div><div style="font-size:13px;font-weight:600;color:var(--text-bright)">Broken Access Control</div><div style="font-size:12px;color:var(--text-dim);margin-top:4px">Change /invoice/123 → /invoice/124 — unauthorized access</div></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);padding:20px 24px;display:flex;gap:16px;align-items:flex-start;cursor:none;transition:all 0.2s;" onmouseenter="this.style.borderColor='var(--accent2)'" onmouseleave="this.style.borderColor='var(--border)'">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent2);flex-shrink:0;line-height:1">A02</div>
+          <div><div style="font-size:13px;font-weight:600;color:var(--text-bright)">Cryptographic Failures</div><div style="font-size:12px;color:var(--text-dim);margin-top:4px">MD5 passwords, HTTP for credit cards, weak TLS</div></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);padding:20px 24px;display:flex;gap:16px;align-items:flex-start;cursor:none;transition:all 0.2s;" onmouseenter="this.style.borderColor='var(--accent2)'" onmouseleave="this.style.borderColor='var(--border)'">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent2);flex-shrink:0;line-height:1">A03</div>
+          <div><div style="font-size:13px;font-weight:600;color:var(--text-bright)">Injection</div><div style="font-size:12px;color:var(--text-dim);margin-top:4px">SQL, LDAP, OS command injection attacks</div></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);padding:20px 24px;display:flex;gap:16px;align-items:flex-start;cursor:none;transition:all 0.2s;" onmouseenter="this.style.borderColor='var(--accent2)'" onmouseleave="this.style.borderColor='var(--border)'">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent2);flex-shrink:0;line-height:1">A06</div>
+          <div><div style="font-size:13px;font-weight:600;color:var(--text-bright)">Vulnerable Components</div><div style="font-size:12px;color:var(--text-dim);margin-top:4px">Log4Shell — Log4j 2.x RCE via log messages</div></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);padding:20px 24px;display:flex;gap:16px;align-items:flex-start;cursor:none;transition:all 0.2s;" onmouseenter="this.style.borderColor='var(--accent2)'" onmouseleave="this.style.borderColor='var(--border)'">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent2);flex-shrink:0;line-height:1">A08</div>
+          <div><div style="font-size:13px;font-weight:600;color:var(--text-bright)">Software Integrity Failures</div><div style="font-size:12px;color:var(--text-dim);margin-top:4px">SolarWinds: malicious code in build pipeline</div></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);padding:20px 24px;display:flex;gap:16px;align-items:flex-start;cursor:none;transition:all 0.2s;" onmouseenter="this.style.borderColor='var(--accent2)'" onmouseleave="this.style.borderColor='var(--border)'">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent2);flex-shrink:0;line-height:1">A10</div>
+          <div><div style="font-size:13px;font-weight:600;color:var(--text-bright)">SSRF</div><div style="font-size:12px;color:var(--text-dim);margin-top:4px">Server fetches attacker-controlled URL → internal access</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ZERO TRUST -->
+<section id="zt-section">
+  <div class="section-header reveal">
+    <div class="section-tag">Chapter 18 · Modern Architecture</div>
+    <div class="section-title">ZERO TRUST<br><span style="color:var(--accent3)">ARCHITECTURE</span></div>
+    <p class="section-desc">"Never Trust, Always Verify" — coined by John Kindervag at Forrester Research. Assumes breach has ALREADY occurred.</p>
+  </div>
+  <div id="zt-canvas-wrap" class="reveal">
+    <canvas id="zt-canvas"></canvas>
+  </div>
+  <div class="zt-principles reveal">
+    <div class="zt-principle">
+      <div class="zt-principle-num">01</div>
+      <div class="zt-principle-title">VERIFY EXPLICITLY</div>
+      <div class="zt-principle-desc">Always authenticate and authorise based on ALL available data — identity, device health, location, behaviour. MFA + device trust + continuous re-authentication.</div>
+    </div>
+    <div class="zt-principle">
+      <div class="zt-principle-num">02</div>
+      <div class="zt-principle-title">LEAST PRIVILEGE</div>
+      <div class="zt-principle-desc">Limit access to ONLY what's needed, ONLY when needed (Just-in-Time). ZTNA instead of VPN — VPN gives full network access, which is far too broad.</div>
+    </div>
+    <div class="zt-principle">
+      <div class="zt-principle-num">03</div>
+      <div class="zt-principle-title">ASSUME BREACH</div>
+      <div class="zt-principle-desc">Design as if the network is already compromised — limit blast radius. Microsegmentation, E2E encryption, comprehensive logging, proactive threat hunting.</div>
+    </div>
+  </div>
+  <div class="compare-grid reveal" style="margin-top:40px;">
+    <div class="compare-col bad">
+      <div class="compare-title" style="color:#f87171">TRADITIONAL VPN</div>
+      <div class="compare-item"><span class="compare-icon">❌</span> Full network access after auth — like handing someone ALL your house keys</div>
+      <div class="compare-item"><span class="compare-icon">❌</span> Trust never expires during session</div>
+      <div class="compare-item"><span class="compare-icon">❌</span> Easy lateral movement once inside tunnel</div>
+      <div class="compare-item"><span class="compare-icon">❌</span> No inspection after tunnel established</div>
+      <div class="compare-item"><span class="compare-icon">❌</span> One compromised laptop = full network access</div>
+    </div>
+    <div class="compare-col good">
+      <div class="compare-title" style="color:var(--accent4)">ZTNA 2.0 (PRISMA ACCESS)</div>
+      <div class="compare-item"><span class="compare-icon">✅</span> App-specific access only — only the app you're authorised for</div>
+      <div class="compare-item"><span class="compare-icon">✅</span> Continuously verify THROUGHOUT session — trust revocable mid-session</div>
+      <div class="compare-item"><span class="compare-icon">✅</span> Zero implicit trust — no lateral movement possible</div>
+      <div class="compare-item"><span class="compare-icon">✅</span> Full L7 inspection of ALL traffic including ZTNA connections</div>
+      <div class="compare-item"><span class="compare-icon">✅</span> One compromised device = only sees ONE app</div>
+    </div>
+  </div>
+</section>
+
+<!-- IP CALCULATOR -->
+<section id="calc-section">
+  <div class="calc-inner">
+    <div class="section-header reveal">
+      <div class="section-tag">Chapter 3 · Interactive Tool</div>
+      <div class="section-title">SUBNET<br><span style="color:var(--accent)">CALCULATOR</span></div>
+      <p class="section-desc">Enter any IPv4 address with CIDR notation to instantly compute network details.</p>
+    </div>
+    <div class="calc-form reveal">
+      <div class="calc-input-group">
+        <input type="text" class="calc-input" id="calc-ip" placeholder="192.168.10.0/24" value="192.168.10.0/24">
+        <button class="calc-btn" onclick="calculateSubnet()">CALCULATE</button>
+      </div>
+      <div class="calc-results" id="calc-results">
+        <div class="calc-result-item"><div class="calc-result-label">NETWORK ADDRESS</div><div class="calc-result-val" id="r-network">192.168.10.0</div></div>
+        <div class="calc-result-item"><div class="calc-result-label">BROADCAST ADDRESS</div><div class="calc-result-val" id="r-broadcast">192.168.10.255</div></div>
+        <div class="calc-result-item"><div class="calc-result-label">SUBNET MASK</div><div class="calc-result-val" id="r-mask">255.255.255.0</div></div>
+        <div class="calc-result-item"><div class="calc-result-label">FIRST HOST</div><div class="calc-result-val" id="r-first">192.168.10.1</div></div>
+        <div class="calc-result-item"><div class="calc-result-label">LAST HOST</div><div class="calc-result-val" id="r-last">192.168.10.254</div></div>
+        <div class="calc-result-item"><div class="calc-result-label">USABLE HOSTS</div><div class="calc-result-val" id="r-hosts">254</div></div>
+        <div class="calc-result-item"><div class="calc-result-label">CIDR NOTATION</div><div class="calc-result-val" id="r-cidr">/24</div></div>
+        <div class="calc-result-item"><div class="calc-result-label">WILDCARD MASK</div><div class="calc-result-val" id="r-wild">0.0.0.255</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz-section">
+  <div class="quiz-inner">
+    <div class="section-header reveal" style="text-align:center;">
+      <div class="section-tag" style="justify-content:center;">Interactive · Test Your Knowledge</div>
+      <div class="section-title">NETWORKING<br><span style="color:var(--accent2)">QUIZ</span></div>
+      <p class="section-desc" style="margin:16px auto 0;">10 questions covering OSI, protocols, TCP, security and more. Can you ace it?</p>
+    </div>
+    <div class="quiz-card reveal">
+      <div id="quiz-content">
+        <div class="quiz-progress">
+          <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-prog" style="width:10%"></div></div>
+          <div class="quiz-counter" id="quiz-counter">1 / 10</div>
+        </div>
+        <div class="quiz-category" id="quiz-cat"></div>
+        <div class="quiz-question" id="quiz-q"></div>
+        <div class="quiz-options" id="quiz-opts"></div>
+        <div class="quiz-feedback" id="quiz-fb"></div>
+        <button class="quiz-next" id="quiz-next" onclick="nextQuestion()">NEXT QUESTION →</button>
+      </div>
+      <div class="quiz-score" id="quiz-score">
+        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:3px;margin-bottom:16px">FINAL SCORE</div>
+        <div class="score-num" id="score-display">0/10</div>
+        <div class="score-label" id="score-label">LOADING...</div>
+        <button class="score-restart" onclick="restartQuiz()">RESTART QUIZ</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHEAT SHEET -->
+<section id="cheatsheet-section">
+  <div class="section-header reveal">
+    <div class="section-tag">Chapter 21 · Quick Reference</div>
+    <div class="section-title">QUICK-REFERENCE<br><span style="color:var(--accent4)">CHEAT SHEET</span></div>
+  </div>
+  <div class="cheat-grid reveal">
+    <div class="cheat-block">
+      <div class="cheat-block-title">🔢 KEY NUMBERS</div>
+      <div class="cheat-row"><span class="cheat-key">IPv4 loopback</span><span class="cheat-val">127.0.0.1 (/8 range)</span></div>
+      <div class="cheat-row"><span class="cheat-key">IPv6 loopback</span><span class="cheat-val">::1/128</span></div>
+      <div class="cheat-row"><span class="cheat-key">IPv4 broadcast</span><span class="cheat-val">255.255.255.255</span></div>
+      <div class="cheat-row"><span class="cheat-key">APIPA fallback</span><span class="cheat-val">169.254.x.x</span></div>
+      <div class="cheat-row"><span class="cheat-key">RFC 1918 Class A</span><span class="cheat-val">10.0.0.0/8</span></div>
+      <div class="cheat-row"><span class="cheat-key">RFC 1918 Class B</span><span class="cheat-val">172.16.0.0/12</span></div>
+      <div class="cheat-row"><span class="cheat-key">RFC 1918 Class C</span><span class="cheat-val">192.168.0.0/16</span></div>
+      <div class="cheat-row"><span class="cheat-key">Ethernet MTU</span><span class="cheat-val">1500 bytes</span></div>
+      <div class="cheat-row"><span class="cheat-key">Jumbo frames</span><span class="cheat-val">9000 bytes</span></div>
+      <div class="cheat-row"><span class="cheat-key">TCP header min</span><span class="cheat-val">20 bytes</span></div>
+      <div class="cheat-row"><span class="cheat-key">UDP header</span><span class="cheat-val">8 bytes (fixed)</span></div>
+      <div class="cheat-row"><span class="cheat-key">IPv6 header</span><span class="cheat-val">40 bytes (fixed)</span></div>
+    </div>
+    <div class="cheat-block">
+      <div class="cheat-block-title">🏆 ADMIN DISTANCE</div>
+      <div class="cheat-row"><span class="cheat-key">Connected</span><span class="cheat-val">AD = 0 (most trusted)</span></div>
+      <div class="cheat-row"><span class="cheat-key">Static route</span><span class="cheat-val">AD = 1</span></div>
+      <div class="cheat-row"><span class="cheat-key">eBGP</span><span class="cheat-val">AD = 20</span></div>
+      <div class="cheat-row"><span class="cheat-key">EIGRP internal</span><span class="cheat-val">AD = 90</span></div>
+      <div class="cheat-row"><span class="cheat-key">OSPF</span><span class="cheat-val">AD = 110</span></div>
+      <div class="cheat-row"><span class="cheat-key">IS-IS</span><span class="cheat-val">AD = 115</span></div>
+      <div class="cheat-row"><span class="cheat-key">RIP</span><span class="cheat-val">AD = 120</span></div>
+      <div class="cheat-row"><span class="cheat-key">iBGP</span><span class="cheat-val">AD = 200</span></div>
+      <div class="cheat-row"><span class="cheat-key">TCP TIME_WAIT</span><span class="cheat-val">2 × MSL ≈ 2–4 min</span></div>
+      <div class="cheat-row"><span class="cheat-key">STP bridge priority</span><span class="cheat-val">32768 (default)</span></div>
+      <div class="cheat-row"><span class="cheat-key">MAC age time</span><span class="cheat-val">300 seconds</span></div>
+      <div class="cheat-row"><span class="cheat-key">ARP cache</span><span class="cheat-val">~20 minutes</span></div>
+    </div>
+    <div class="cheat-block">
+      <div class="cheat-block-title">📡 PROTOCOL NUMBERS</div>
+      <div class="cheat-row"><span class="cheat-key">ICMP</span><span class="cheat-val">Protocol 1</span></div>
+      <div class="cheat-row"><span class="cheat-key">TCP</span><span class="cheat-val">Protocol 6</span></div>
+      <div class="cheat-row"><span class="cheat-key">UDP</span><span class="cheat-val">Protocol 17</span></div>
+      <div class="cheat-row"><span class="cheat-key">OSPF</span><span class="cheat-val">Protocol 89</span></div>
+      <div class="cheat-row"><span class="cheat-key">IPSec ESP</span><span class="cheat-val">Protocol 50</span></div>
+      <div class="cheat-row"><span class="cheat-key">IPSec AH</span><span class="cheat-val">Protocol 51</span></div>
+      <div class="cheat-row"><span class="cheat-key">OSPF all-routers</span><span class="cheat-val">224.0.0.5</span></div>
+      <div class="cheat-row"><span class="cheat-key">OSPF DR/BDR</span><span class="cheat-val">224.0.0.6</span></div>
+      <div class="cheat-row"><span class="cheat-key">STP multicast</span><span class="cheat-val">01:80:C2:00:00:00</span></div>
+      <div class="cheat-row"><span class="cheat-key">VXLAN UDP</span><span class="cheat-val">Port 4789</span></div>
+      <div class="cheat-row"><span class="cheat-key">RADIUS auth</span><span class="cheat-val">UDP 1812</span></div>
+      <div class="cheat-row"><span class="cheat-key">TACACS+</span><span class="cheat-val">TCP 49</span></div>
+    </div>
+    <div class="cheat-block">
+      <div class="cheat-block-title">🔐 BGP BEST PATH</div>
+      <div class="cheat-row"><span class="cheat-key" style="color:var(--text-dim)">"We Love Oranges As</span><span class="cheat-val" style="color:var(--text-dim)">Oranges Mean Pure Refreshment"</span></div>
+      <div class="cheat-row"><span class="cheat-key">W — Weight</span><span class="cheat-val">Higher preferred (Cisco local)</span></div>
+      <div class="cheat-row"><span class="cheat-key">L — Local Pref</span><span class="cheat-val">Higher preferred (within AS)</span></div>
+      <div class="cheat-row"><span class="cheat-key">O — Locally Orig</span><span class="cheat-val">Local routes preferred</span></div>
+      <div class="cheat-row"><span class="cheat-key">A — AS Path</span><span class="cheat-val">SHORTER preferred</span></div>
+      <div class="cheat-row"><span class="cheat-key">O — Origin</span><span class="cheat-val">IGP > EGP > Incomplete</span></div>
+      <div class="cheat-row"><span class="cheat-key">M — MED</span><span class="cheat-val">LOWER preferred</span></div>
+      <div class="cheat-row"><span class="cheat-key">P — eBGP > iBGP</span><span class="cheat-val">External over internal</span></div>
+      <div class="cheat-row"><span class="cheat-key">R — Router ID</span><span class="cheat-val">Lowest tiebreaker</span></div>
+      <div class="cheat-row" style="margin-top:16px;"><span class="cheat-key">OSI mnemonic ↓</span><span class="cheat-val">"All People Seem To Need Data Processing"</span></div>
+      <div class="cheat-row"><span class="cheat-key">OSI mnemonic ↑</span><span class="cheat-val">"Please Do Not Throw Sausage Pizza Away"</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">NETCORE</div>
+  <p class="footer-text">PALO ALTO NETWORKS · MASTER NETWORKING REFERENCE · VERSION 3.0 · 2026</p>
+  <p style="font-family:'Space Mono',monospace;font-size:10px;color:rgba(107,140,170,0.4);margin-top:8px;">Prepared by Nir Zuk · Founder & CTO, Palo Alto Networks</p>
+</footer>
+
+<script>
+// ===== CURSOR =====
+const cursor = document.getElementById('cursor');
+const trail = document.getElementById('cursor-trail');
+let mouseX = 0, mouseY = 0;
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX; mouseY = e.clientY;
+  cursor.style.left = (mouseX - 6) + 'px';
+  cursor.style.top = (mouseY - 6) + 'px';
+  setTimeout(() => {
+    trail.style.left = (mouseX - 20) + 'px';
+    trail.style.top = (mouseY - 20) + 'px';
+  }, 80);
+});
+document.querySelectorAll('a,button,.osi-layer,.topo-card,.dns-step,.threat-card,.quiz-option,.filter-tab').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.transform = 'scale(2.5)'; cursor.style.background = 'var(--accent2)'; trail.style.borderColor = 'rgba(255,107,53,0.6)'; });
+  el.addEventListener('mouseleave', () => { cursor.style.transform = 'scale(1)'; cursor.style.background = 'var(--accent)'; trail.style.borderColor = 'rgba(0,212,255,0.4)'; });
+});
+
+// ===== BG CANVAS — NETWORK PARTICLE SYSTEM =====
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+bgCanvas.width = window.innerWidth;
+bgCanvas.height = window.innerHeight;
+
+const nodes = [];
+for (let i = 0; i < 80; i++) {
+  nodes.push({ x: Math.random() * bgCanvas.width, y: Math.random() * bgCanvas.height, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 2 + 1 });
+}
+
+function drawBg() {
+  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+  nodes.forEach(n => {
+    n.x += n.vx; n.y += n.vy;
+    if (n.x < 0) n.x = bgCanvas.width;
+    if (n.x > bgCanvas.width) n.x = 0;
+    if (n.y < 0) n.y = bgCanvas.height;
+    if (n.y > bgCanvas.height) n.y = 0;
+    bgCtx.beginPath();
+    bgCtx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+    bgCtx.fillStyle = 'rgba(0,212,255,0.5)';
+    bgCtx.fill();
+  });
+  nodes.forEach((a, i) => {
+    nodes.forEach((b, j) => {
+      if (j <= i) return;
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (d < 150) {
+        bgCtx.beginPath();
+        bgCtx.moveTo(a.x, a.y);
+        bgCtx.lineTo(b.x, b.y);
+        bgCtx.strokeStyle = `rgba(0,212,255,${0.08 * (1 - d / 150)})`;
+        bgCtx.lineWidth = 0.5;
+        bgCtx.stroke();
+      }
+    });
+  });
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+window.addEventListener('resize', () => { bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; });
+
+// ===== OSI 3D CANVAS =====
+const osiCanvas = document.getElementById('osi-canvas');
+const osiCtx = osiCanvas.getContext('2d');
+osiCanvas.width = 500; osiCanvas.height = 500;
+
+const layerColors = ['#ef4444','#ff6b35','#f59e0b','#10b981','#7c3aed','#00b4d8','#00d4ff'];
+const layerNames = ['Physical','Data Link','Network','Transport','Session','Presentation','Application'];
+let osiAngle = 0;
+let osiHover = -1;
+
+function drawOSI() {
+  osiCtx.clearRect(0, 0, 500, 500);
+  const cx = 250, cy = 250;
+  const layers = 7;
+  const perspective = 120;
+  
+  osiCtx.save();
+  osiCtx.translate(cx, cy);
+  
+  for (let i = 0; i < layers; i++) {
+    const t = i / (layers - 1);
+    const layerY = -160 + i * 48;
+    const w = 180 + i * 10;
+    const h = 36;
+    const depth = 60;
+    const color = layerColors[6 - i];
+    const alpha = osiHover === (6-i) ? 1 : 0.85;
+    
+    // 3D box effect
+    const ox = Math.cos(osiAngle + Math.PI * 0.15) * depth * 0.4;
+    const oy = Math.sin(osiAngle + Math.PI * 0.15) * depth * 0.15 - 8;
+    
+    // Top face
+    osiCtx.beginPath();
+    osiCtx.moveTo(-w/2, layerY);
+    osiCtx.lineTo(w/2, layerY);
+    osiCtx.lineTo(w/2 + ox, layerY + oy);
+    osiCtx.lineTo(-w/2 + ox, layerY + oy);
+    osiCtx.closePath();
+    osiCtx.fillStyle = color + (osiHover === (6-i) ? 'ff' : 'bb');
+    osiCtx.fill();
+    osiCtx.strokeStyle = 'rgba(0,0,0,0.3)';
+    osiCtx.lineWidth = 1;
+    osiCtx.stroke();
+    
+    // Front face
+    osiCtx.beginPath();
+    osiCtx.moveTo(-w/2, layerY);
+    osiCtx.lineTo(w/2, layerY);
+    osiCtx.lineTo(w/2, layerY + h);
+    osiCtx.lineTo(-w/2, layerY + h);
+    osiCtx.closePath();
+    const grad = osiCtx.createLinearGradient(-w/2, layerY, w/2, layerY + h);
+    grad.addColorStop(0, color + '99');
+    grad.addColorStop(1, color + '44');
+    osiCtx.fillStyle = grad;
+    osiCtx.fill();
+    osiCtx.strokeStyle = color + '66';
+    osiCtx.lineWidth = 1;
+    osiCtx.stroke();
+    
+    // Layer number
+    osiCtx.fillStyle = 'rgba(255,255,255,0.9)';
+    osiCtx.font = 'bold 13px Space Mono, monospace';
+    osiCtx.textAlign = 'left';
+    osiCtx.fillText(`L${6-i+1}`, -w/2 + 10, layerY + h/2 + 5);
+    
+    // Layer name
+    osiCtx.font = '12px DM Sans, sans-serif';
+    osiCtx.textAlign = 'center';
+    osiCtx.fillText(layerNames[6-i], 10, layerY + h/2 + 5);
+    
+    // Glow on hover
+    if (osiHover === (6-i)) {
+      osiCtx.shadowBlur = 20;
+      osiCtx.shadowColor = color;
+      osiCtx.strokeStyle = color;
+      osiCtx.lineWidth = 2;
+      osiCtx.strokeRect(-w/2, layerY, w, h);
+      osiCtx.shadowBlur = 0;
+    }
+  }
+  
+  osiCtx.restore();
+  osiAngle += 0.008;
+  requestAnimationFrame(drawOSI);
+}
+drawOSI();
+
+osiCanvas.addEventListener('mousemove', e => {
+  const rect = osiCanvas.getBoundingClientRect();
+  const y = (e.clientY - rect.top) / (rect.height / 500);
+  const layerH = 48;
+  const startY = 250 - 160;
+  const idx = Math.floor((y - startY) / layerH);
+  osiHover = (idx >= 0 && idx < 7) ? (6 - idx) : -1;
+});
+
+// ===== TOPOLOGY CANVASES =====
+function drawBusTopology() {
+  const c = document.getElementById('topo-bus');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,240,120);
+  // backbone
+  ctx.beginPath(); ctx.moveTo(20, 60); ctx.lineTo(220, 60);
+  ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3; ctx.stroke();
+  // terminators
+  ctx.fillStyle = '#ef4444';
+  ctx.fillRect(14, 52, 6, 16); ctx.fillRect(220, 52, 6, 16);
+  // devices
+  [50,90,130,170].forEach(x => {
+    ctx.beginPath(); ctx.moveTo(x, 60); ctx.lineTo(x, 30);
+    ctx.strokeStyle = '#6b8caa'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x, 22, 8, 0, Math.PI*2);
+    ctx.fillStyle = '#0a1628'; ctx.fill();
+    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 1.5; ctx.stroke();
+  });
+}
+function drawRingTopology() {
+  const c = document.getElementById('topo-ring');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,240,120);
+  const cx = 120, cy = 60, r = 42;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2; ctx.stroke();
+  for (let i=0;i<5;i++) {
+    const a = (i/5)*Math.PI*2 - Math.PI/2;
+    const x = cx + r*Math.cos(a), y = cy + r*Math.sin(a);
+    ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI*2);
+    ctx.fillStyle = '#0a1628'; ctx.fill();
+    ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+  // token
+  const ta = osiAngle*2 % (Math.PI*2) - Math.PI/2;
+  ctx.beginPath(); ctx.arc(cx+r*Math.cos(ta), cy+r*Math.sin(ta), 4, 0, Math.PI*2);
+  ctx.fillStyle = '#fbbf24'; ctx.fill();
+}
+function drawStarTopology() {
+  const c = document.getElementById('topo-star');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,240,120);
+  const cx=120, cy=60;
+  ctx.beginPath(); ctx.arc(cx, cy, 12, 0, Math.PI*2);
+  ctx.fillStyle = '#0a1628'; ctx.fill();
+  ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#00d4ff'; ctx.font = '8px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('SW', cx, cy+3);
+  [[50,20],[170,20],[200,60],[170,100],[50,100],[20,60]].forEach(([x,y]) => {
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y);
+    ctx.strokeStyle = 'rgba(0,212,255,0.4)'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x,y,7,0,Math.PI*2);
+    ctx.fillStyle='#0a1628'; ctx.fill();
+    ctx.strokeStyle='#00d4ff'; ctx.lineWidth=1; ctx.stroke();
+  });
+}
+function drawTreeTopology() {
+  const c = document.getElementById('topo-tree');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,240,120);
+  const draw = (x,y,color,size=8) => {
+    ctx.beginPath(); ctx.arc(x,y,size,0,Math.PI*2);
+    ctx.fillStyle='#0a1628'; ctx.fill();
+    ctx.strokeStyle=color; ctx.lineWidth=2; ctx.stroke();
+  };
+  const line = (x1,y1,x2,y2) => {
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+    ctx.strokeStyle='rgba(16,185,129,0.4)'; ctx.lineWidth=1.5; ctx.stroke();
+  };
+  draw(120,18,'#10b981',10);
+  draw(70,55,'#10b981',7); draw(170,55,'#10b981',7);
+  line(120,18,70,55); line(120,18,170,55);
+  [40,70,100].forEach(x => { draw(x,92,'#6b8caa',5); line(70,55,x,92); });
+  [140,170,200].forEach(x => { draw(x,92,'#6b8caa',5); line(170,55,x,92); });
+}
+function drawMeshTopology() {
+  const c = document.getElementById('topo-mesh');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,240,120);
+  const pts = [[120,15],[195,50],[175,100],[65,100],[45,50],[80,70],[160,45]];
+  pts.forEach(([ax,ay],i) => pts.forEach(([bx,by],j) => {
+    if(j<=i) return;
+    ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by);
+    ctx.strokeStyle='rgba(255,107,53,0.2)'; ctx.lineWidth=1; ctx.stroke();
+  }));
+  pts.forEach(([x,y],i) => {
+    ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2);
+    ctx.fillStyle='#0a1628'; ctx.fill();
+    ctx.strokeStyle='#ff6b35'; ctx.lineWidth=1.5; ctx.stroke();
+  });
+}
+
+drawBusTopology(); drawRingTopology(); drawStarTopology(); drawTreeTopology(); drawMeshTopology();
+setInterval(() => { drawRingTopology(); }, 30);
+
+// ===== ZERO TRUST CANVAS =====
+const ztCanvas = document.getElementById('zt-canvas');
+const ztCtx = ztCanvas.getContext('2d');
+ztCanvas.width = ztCanvas.parentElement.clientWidth;
+ztCanvas.height = 500;
+
+const ztNodes = [
+  {x:0.5,y:0.5,label:'POLICY ENGINE',color:'#7c3aed',r:40,type:'core'},
+  {x:0.15,y:0.2,label:'USER+MFA',color:'#00d4ff',r:24,type:'user'},
+  {x:0.85,y:0.2,label:'DEVICE TRUST',color:'#10b981',r:24,type:'device'},
+  {x:0.15,y:0.8,label:'APP ACCESS',color:'#f59e0b',r:24,type:'app'},
+  {x:0.85,y:0.8,label:'DATA ZONE',color:'#ef4444',r:24,type:'data'},
+  {x:0.5,y:0.12,label:'IDENTITY',color:'#00d4ff',r:18,type:'id'},
+  {x:0.5,y:0.88,label:'NETWORK',color:'#ff6b35',r:18,type:'net'},
+];
+let ztT = 0;
+
+function drawZT() {
+  const W = ztCanvas.width, H = ztCanvas.height;
+  ztCtx.clearRect(0,0,W,H);
+  ztT += 0.01;
+  
+  // Draw connections
+  ztNodes.slice(1).forEach((n, i) => {
+    const core = ztNodes[0];
+    const x1 = core.x*W, y1=core.y*H, x2=n.x*W, y2=n.y*H;
+    const progress = ((ztT + i*0.3) % 1);
+    
+    ctx_line(ztCtx, x1,y1,x2,y2, `rgba(124,58,237,0.15)`, 1.5);
+    
+    // Animated packet
+    const px = x1 + (x2-x1)*progress;
+    const py = y1 + (y2-y1)*progress;
+    ztCtx.beginPath(); ztCtx.arc(px,py,4,0,Math.PI*2);
+    ztCtx.fillStyle = n.color + 'cc'; ztCtx.fill();
+    ztCtx.shadowBlur = 10; ztCtx.shadowColor = n.color;
+    ztCtx.fill(); ztCtx.shadowBlur = 0;
+  });
+  
+  // "NEVER TRUST" wall
+  ztCtx.save();
+  ztCtx.setLineDash([8,4]);
+  ztCtx.beginPath();
+  ztCtx.arc(ztNodes[0].x*W, ztNodes[0].y*H, 120, 0, Math.PI*2);
+  ztCtx.strokeStyle = 'rgba(124,58,237,0.3)';
+  ztCtx.lineWidth = 1.5;
+  ztCtx.stroke();
+  ztCtx.setLineDash([]);
+  ztCtx.restore();
+  
+  // Draw nodes
+  ztNodes.forEach(n => {
+    const x=n.x*W, y=n.y*H;
+    ztCtx.save();
+    ztCtx.beginPath(); ztCtx.arc(x,y,n.r,0,Math.PI*2);
+    ztCtx.fillStyle = n.color + '22'; ztCtx.fill();
+    ztCtx.strokeStyle = n.color; ztCtx.lineWidth = 2; ztCtx.stroke();
+    
+    ztCtx.fillStyle = '#e2f0ff';
+    ztCtx.font = `bold ${n.type==='core'?11:9}px Space Mono, monospace`;
+    ztCtx.textAlign = 'center';
+    ztCtx.textBaseline = 'middle';
+    const lines = n.label.split('+');
+    lines.forEach((l,li) => ztCtx.fillText(l, x, y - (lines.length-1)*7 + li*14));
+    ztCtx.restore();
+    
+    // Pulse for core
+    if (n.type==='core') {
+      const pulse = (Math.sin(ztT*3)+1)/2;
+      ztCtx.beginPath(); ztCtx.arc(x,y,n.r + pulse*20, 0, Math.PI*2);
+      ztCtx.strokeStyle = `rgba(124,58,237,${0.3*(1-pulse)})`;
+      ztCtx.lineWidth = 1; ztCtx.stroke();
+    }
+  });
+  
+  // Labels
+  ztCtx.fillStyle = 'rgba(124,58,237,0.6)';
+  ztCtx.font = '10px Space Mono, monospace';
+  ztCtx.textAlign = 'center';
+  ztCtx.fillText('CONTINUOUS VERIFICATION BOUNDARY', ztNodes[0].x*W, ztNodes[0].y*H - 130);
+  
+  requestAnimationFrame(drawZT);
+}
+function ctx_line(ctx,x1,y1,x2,y2,color,w) {
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+  ctx.strokeStyle=color; ctx.lineWidth=w; ctx.stroke();
+}
+drawZT();
+
+// ===== PROTOCOLS DATA =====
+const protocols = [
+  {name:'HTTP',port:'80',transport:'TCP',purpose:'Unencrypted web browsing',security:'bad',secText:'⚠ Always redirect to HTTPS',cat:'web'},
+  {name:'HTTPS',port:'443',transport:'TCP/UDP',purpose:'Encrypted web (HTTP+TLS). QUIC uses UDP',security:'good',secText:'✓ Gold standard for web traffic',cat:'web'},
+  {name:'FTP',port:'20/21',transport:'TCP',purpose:'File Transfer — UNENCRYPTED',security:'bad',secText:'⚠ Use SFTP (22) instead!',cat:'web'},
+  {name:'SSH/SFTP',port:'22',transport:'TCP',purpose:'Secure Shell — encrypted remote login',security:'good',secText:'✓ Use SSH keys, disable passwords',cat:'security'},
+  {name:'Telnet',port:'23',transport:'TCP',purpose:'Unencrypted remote login — plaintext',security:'bad',secText:'✗ NEVER use in production',cat:'management'},
+  {name:'SMTP',port:'25/587/465',transport:'TCP',purpose:'Email delivery (server-to-server & client)',security:'warn',secText:'⚠ Block 25 externally, use 587/465',cat:'email'},
+  {name:'DNS',port:'53',transport:'UDP/TCP',purpose:'Domain name resolution',security:'warn',secText:'⚠ Monitor for DNS tunneling',cat:'routing'},
+  {name:'DHCP',port:'67/68',transport:'UDP',purpose:'Dynamic IP assignment',security:'warn',secText:'⚠ Enable DHCP Snooping',cat:'management'},
+  {name:'HTTP (S)',port:'80/443',transport:'TCP',purpose:'Web traffic — 80 unsecured, 443 TLS',security:'warn',secText:'⚠ Enforce HTTPS redirect',cat:'web'},
+  {name:'POP3/S',port:'110/995',transport:'TCP',purpose:'Email download to single device',security:'warn',secText:'⚠ Always use 995 (POP3S)',cat:'email'},
+  {name:'NTP',port:'123',transport:'UDP',purpose:'Network time synchronisation',security:'warn',secText:'⚠ Critical for certs and logs',cat:'management'},
+  {name:'IMAP/S',port:'143/993',transport:'TCP',purpose:'Email sync — multi-device (use 993)',security:'good',secText:'✓ Use 993 (IMAPS) always',cat:'email'},
+  {name:'SNMP',port:'161/162',transport:'UDP',purpose:'Network device management',security:'bad',secText:'⚠ Use SNMPv3 ONLY',cat:'management'},
+  {name:'BGP',port:'179',transport:'TCP',purpose:'Internet routing between Autonomous Systems',security:'warn',secText:'⚠ Critical — BGP hijacking possible',cat:'routing'},
+  {name:'LDAP/S',port:'389/636',transport:'TCP',purpose:'Directory services (Active Directory)',security:'bad',secText:'⚠ Use LDAPS (636) always',cat:'security'},
+  {name:'SMB',port:'445',transport:'TCP',purpose:'Windows file sharing',security:'bad',secText:'✗ EternalBlue/WannaCry target!',cat:'security'},
+  {name:'IPSec IKE',port:'500/4500',transport:'UDP',purpose:'VPN key exchange and NAT traversal',security:'good',secText:'✓ Use IKEv2 with AES-256',cat:'security'},
+  {name:'RDP',port:'3389',transport:'TCP',purpose:'Windows Remote Desktop',security:'bad',secText:'✗ Major attack target — VPN only!',cat:'security'},
+  {name:'OSPF',port:'89 (proto)',transport:'IP',purpose:'Open Shortest Path First routing',security:'warn',secText:'⚠ Authenticate OSPF neighbors',cat:'routing'},
+  {name:'HTTPS/QUIC',port:'443',transport:'UDP',purpose:'HTTP/3 over QUIC — faster mobile',security:'good',secText:'✓ Future of web transport',cat:'web'},
+];
+
+function renderProtoTable(filter='all', search='') {
+  const tbody = document.getElementById('proto-tbody');
+  const rows = protocols.filter(p => {
+    const catMatch = filter === 'all' || p.cat === filter;
+    const searchMatch = !search || p.name.toLowerCase().includes(search) || p.purpose.toLowerCase().includes(search) || p.port.includes(search);
+    return catMatch && searchMatch;
+  });
+  tbody.innerHTML = rows.map(p => `
+    <tr>
+      <td><span class="proto-name">${p.name}</span></td>
+      <td><span class="proto-port">${p.port}</span></td>
+      <td><span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-dim)">${p.transport}</span></td>
+      <td style="color:var(--text-dim);font-size:13px">${p.purpose}</td>
+      <td><span class="proto-security-${p.security}">${p.secText}</span></td>
+    </tr>
+  `).join('');
+}
+renderProtoTable();
+
+let currentFilter = 'all';
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentFilter = tab.dataset.filter;
+    renderProtoTable(currentFilter, document.getElementById('proto-search-input').value.toLowerCase());
+  });
+});
+document.getElementById('proto-search-input').addEventListener('input', e => {
+  renderProtoTable(currentFilter, e.target.value.toLowerCase());
+});
+
+// ===== TCP HANDSHAKE ANIMATION =====
+function animateTCP() {
+  const messages = document.querySelectorAll('.tcp-message');
+  messages.forEach((m, i) => {
+    setTimeout(() => m.classList.add('visible'), i * 600 + 200);
+  });
+}
+const tcpObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { animateTCP(); tcpObs.disconnect(); }});
+}, { threshold: 0.3 });
+const tcpEl = document.getElementById('tcp-timeline');
+if (tcpEl) tcpObs.observe(tcpEl);
+
+// ===== IP CALCULATOR =====
+function calculateSubnet() {
+  const val = document.getElementById('calc-ip').value.trim();
+  const parts = val.split('/');
+  if (parts.length !== 2) { alert('Enter IP/CIDR format, e.g. 192.168.1.0/24'); return; }
+  const ip = parts[0].trim();
+  const cidr = parseInt(parts[1]);
+  if (isNaN(cidr) || cidr < 0 || cidr > 32) { alert('Invalid CIDR (0-32)'); return; }
+  
+  const ipParts = ip.split('.').map(Number);
+  if (ipParts.length !== 4 || ipParts.some(p => isNaN(p) || p < 0 || p > 255)) { alert('Invalid IP address'); return; }
+  
+  const maskBits = cidr === 0 ? 0 : (0xFFFFFFFF << (32 - cidr)) >>> 0;
+  const ipNum = ((ipParts[0]<<24)|(ipParts[1]<<16)|(ipParts[2]<<8)|ipParts[3]) >>> 0;
+  const networkNum = (ipNum & maskBits) >>> 0;
+  const broadcastNum = (networkNum | (~maskBits >>> 0)) >>> 0;
+  
+  const toIP = n => [(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join('.');
+  const maskOctets = [(maskBits>>>24)&255,(maskBits>>>16)&255,(maskBits>>>8)&255,maskBits&255];
+  const wildcard = maskOctets.map(o => 255-o).join('.');
+  const hosts = cidr >= 31 ? Math.pow(2, 32-cidr) : Math.pow(2, 32-cidr) - 2;
+  
+  document.getElementById('r-network').textContent = toIP(networkNum);
+  document.getElementById('r-broadcast').textContent = toIP(broadcastNum);
+  document.getElementById('r-mask').textContent = maskOctets.join('.');
+  document.getElementById('r-first').textContent = cidr >= 31 ? toIP(networkNum) : toIP(networkNum + 1);
+  document.getElementById('r-last').textContent = cidr >= 31 ? toIP(broadcastNum) : toIP(broadcastNum - 1);
+  document.getElementById('r-hosts').textContent = Math.max(0, hosts).toLocaleString();
+  document.getElementById('r-cidr').textContent = '/' + cidr;
+  document.getElementById('r-wild').textContent = wildcard;
+}
+calculateSubnet();
+
+// ===== QUIZ =====
+const questions = [
+  { cat:'OSI MODEL', q:'Which OSI layer is responsible for SSL/TLS encryption and decryption?', opts:['Layer 4 — Transport','Layer 6 — Presentation','Layer 7 — Application','Layer 5 — Session'], correct:1, explain:'Layer 6 (Presentation) handles encryption/decryption (SSL/TLS), data translation between formats, and compression. This is where HTTPS encrypts your data before it is transmitted.' },
+  { cat:'TCP/IP', q:'In the TCP 3-way handshake, what is the correct sequence of flags?', opts:['ACK → SYN → SYN-ACK','SYN → ACK → SYN-ACK','SYN → SYN-ACK → ACK','SYN-ACK → SYN → ACK'], correct:2, explain:'The TCP 3-way handshake is: (1) Client sends SYN, (2) Server responds SYN-ACK, (3) Client sends ACK. This establishes a reliable bidirectional connection before any data flows.' },
+  { cat:'NETWORKING', q:'What does the 169.254.x.x IP range indicate?', opts:['A private corporate network','A loopback address','APIPA — DHCP server is unreachable','A multicast address'], correct:2, explain:'169.254.x.x is APIPA (Automatic Private IP Addressing) — a self-assigned fallback address when no DHCP server is found. If you see this, your DHCP server is DOWN or unreachable!' },
+  { cat:'PROTOCOLS', q:'Port 53 uses which transport protocols for different purposes?', opts:['TCP only','UDP only','TCP for queries, UDP for zone transfers','UDP for queries, TCP for zone transfers'], correct:3, explain:'DNS uses UDP port 53 for standard queries (fast, low overhead) but switches to TCP port 53 for zone transfers (AXFR) which require reliable delivery of large amounts of data.' },
+  { cat:'SECURITY', q:'What is the defense against ARP Spoofing / Poisoning attacks?', opts:['DHCP Snooping','Dynamic ARP Inspection (DAI)','IP Source Guard','Spanning Tree Protocol'], correct:1, explain:'Dynamic ARP Inspection (DAI) validates ARP packets against the DHCP Snooping binding table and drops invalid ARP replies that could redirect traffic through an attacker (Man-in-the-Middle).' },
+  { cat:'ROUTING', q:'Which routing protocol has an Administrative Distance (AD) of 110?', opts:['BGP (eBGP)','EIGRP','OSPF','RIP'], correct:2, explain:'OSPF has an AD of 110. Remember the scale: Connected=0, Static=1, eBGP=20, EIGRP=90, OSPF=110, IS-IS=115, RIP=120, iBGP=200. Lower AD = more trusted route.' },
+  { cat:'TCP/IP', q:'What is the purpose of TCP\'s sliding window mechanism?', opts:['Congestion control in the network','Flow control — preventing buffer overflow at the receiver','Encrypting the TCP stream','Detecting duplicate segments'], correct:1, explain:'The sliding window provides flow control — the receiver advertises how much buffer space it has, and the sender must not exceed that limit. This prevents the sender from overwhelming a slow receiver.' },
+  { cat:'SECURITY', q:'In Zero Trust architecture, ZTNA differs from traditional VPN because:', opts:['ZTNA is slower but more reliable','ZTNA grants full network access after stricter auth','ZTNA grants access only to specific applications, not full network','ZTNA doesn\'t require authentication'], correct:2, explain:'ZTNA replaces VPN\'s "full network access" model with application-specific access. A compromised device behind ZTNA can only access the specific app it\'s authorized for — not the entire corporate network.' },
+  { cat:'PROTOCOLS', q:'Which protocol is used to resolve an IP address to a MAC address on a local network?', opts:['DNS','RARP','ARP','ICMP'], correct:2, explain:'ARP (Address Resolution Protocol) answers: "I know the destination IP, but what\'s its MAC address?" It broadcasts to the local segment and the matching device replies with its MAC address.' },
+  { cat:'NETWORKING', q:'What formula gives the number of usable hosts in a subnet with a /26 prefix?', opts:['2^26 - 2','2^6 - 2 = 62','2^8 - 2 = 254','2^6 = 64'], correct:1, explain:'Hosts per subnet = 2^(32 - prefix) - 2. For /26: 2^(32-26) - 2 = 2^6 - 2 = 64 - 2 = 62 usable hosts. We subtract 2 for the network address and broadcast address.' },
+];
+
+let currentQ = 0, score = 0, answered = false;
+function loadQuestion() {
+  const q = questions[currentQ];
+  document.getElementById('quiz-cat').textContent = q.cat;
+  document.getElementById('quiz-q').textContent = q.q;
+  document.getElementById('quiz-prog').style.width = ((currentQ+1)/questions.length*100) + '%';
+  document.getElementById('quiz-counter').textContent = `${currentQ+1} / ${questions.length}`;
+  const opts = document.getElementById('quiz-opts');
+  opts.innerHTML = q.opts.map((o,i) => `<div class="quiz-option" onclick="selectAnswer(${i})" data-idx="${i}"><span class="option-letter">${['A','B','C','D'][i]}</span>${o}</div>`).join('');
+  document.getElementById('quiz-fb').className = 'quiz-feedback';
+  document.getElementById('quiz-next').className = 'quiz-next';
+  answered = false;
+}
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  const q = questions[currentQ];
+  const opts = document.querySelectorAll('.quiz-option');
+  opts.forEach(o => o.classList.add('disabled'));
+  opts[idx].classList.add(idx === q.correct ? 'correct' : 'incorrect');
+  if (idx !== q.correct) opts[q.correct].classList.add('correct');
+  const fb = document.getElementById('quiz-fb');
+  fb.textContent = (idx === q.correct ? '✓ Correct! ' : '✗ Incorrect. ') + q.explain;
+  fb.className = 'quiz-feedback visible ' + (idx === q.correct ? 'correct' : 'incorrect');
+  if (idx === q.correct) score++;
+  document.getElementById('quiz-next').className = 'quiz-next visible';
+}
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) showScore();
+  else loadQuestion();
+}
+function showScore() {
+  document.getElementById('quiz-content').style.display = 'none';
+  const scoreEl = document.getElementById('quiz-score');
+  scoreEl.className = 'quiz-score visible';
+  document.getElementById('score-display').textContent = `${score}/${questions.length}`;
+  const pct = (score/questions.length)*100;
+  let label = pct >= 90 ? '🏆 NETWORK MASTER — Outstanding!' : pct >= 70 ? '✅ SOLID FOUNDATION — Keep studying!' : '📚 KEEP LEARNING — Review the material!';
+  document.getElementById('score-label').textContent = label;
+}
+function restartQuiz() {
+  currentQ = 0; score = 0;
+  document.getElementById('quiz-content').style.display = 'block';
+  document.getElementById('quiz-score').className = 'quiz-score';
+  loadQuestion();
+}
+loadQuestion();
+
+// ===== REVEAL ON SCROLL =====
+const revealEls = document.querySelectorAll('.reveal');
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 80);
+      revealObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+revealEls.forEach(el => revealObs.observe(el));
+
+// ===== ACTIVE NAV =====
+const sections = document.querySelectorAll('section[id]');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 200) cur = s.id; });
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    a.style.color = a.getAttribute('href') === '#' + cur ? 'var(--accent)' : '';
+  });
+});
+</script>
+</body>
+</html>
